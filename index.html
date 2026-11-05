@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>electronic-mars</title>
+<meta name="description" content="Utilities that make everyday things simpler. For Windows now, macOS and iOS next.">
+<meta property="og:title" content="electronic-mars">
+<meta property="og:description" content="Utilities that make everyday things simpler. For Windows now, macOS and iOS next.">
+<meta property="og:image" content="https://electronic-mars.github.io/img/apple-touch-icon.png">
+<link rel="icon" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600&family=Unbounded:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>document.documentElement.classList.add("js");</script>
+<!--
+  The site is this file, tokens.css, base.css and img/. Everything that changes
+  (a Store link, a new program, a wallet address) is edited in SITE below, not in
+  the markup. A program or a way to pay with no link simply does not render: a
+  dead donation link is worse than none.
+
+  SITE.test fills the empty addresses and links with placeholders for a look at the full page.
+-->
+<style>
+/* Hallmark · shape: custom (hero, one program list, support band, statement footer) · genre: atmospheric · theme: brand · redesign: full
+ * paper: #0F1A2B night · accent: #E8642C Mars orange · display: Unbounded · body: Onest · hero: Stage · nav: edge-aligned, wordmark and three links · footer: statement · signature: the colony badge under warm lamplight, with an amber tube readout of what is ready and what is on the way
+ * axes: dark/geometric-sans/warm · posture: Restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, a dark utility page could be anyone's; the colony badge, the first demo's night and the tube readout make it this one */
+/* Hallmark · dropped countBar, countUnit, countSub · the 24-segment bar is a counting device (82); the readout now says ready and on the way in two numbers */
+/* Hallmark · waive 39b · button.shot wraps a real screenshot and opens the viewer · the picture is the control for each program screenshot viewer */
+/* Hallmark · waive 44c · Stage hero, the tube readout sits under the actions in the text column · the colony badge is centred on the headline and readout together, the readout belongs to the text */
+/* Hallmark · dismissed 77 · the owner asked for the programs as one plain list again; four sections carry the whole site */
+/* Hallmark · answered F20 · the program buttons wrap by label length; Share closes the row on purpose */
+/* Hallmark · reworded "Support" heading to "Ways to say thanks" · section heads say what the visitor gets */
+@import url("./tokens.css");
+@import url("./base.css");
+@font-face { font-family: "DSEG7"; src: url("https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2") format("woff2"); font-display: swap; }
+
+/* The first demo's night sky, a lighter night for what sits on it, one Mars orange and an amber tube glow. */
+:root {
+  --color-device: #17130F; --color-glow: #FFB547; --color-glow-ghost: #3A2D1C;
+  --color-bloom-warm: #FFB547; --color-bloom-rust: #E8642C;
+  --color-qr-ink: #1A1310; --color-qr-paper: #FBF6EE;
+  --color-scrim: rgb(9 14 24 / 0.8);
+  --display-weight: 600; --tracking-display: -0.02em;
+  --radius-card: 20px; --radius-inner: 12px; --radius-btn: 12px;
+  --shadow-art: 0 24px 48px rgb(4 8 14 / 0.45);
+  --bloom-a: 19%; --bloom-b: 11%;
+  --tile: 64px;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-scrim: rgb(35 28 23 / 0.6);
+    --shadow-art: 0 24px 48px rgb(80 50 30 / 0.18);
+    --bloom-a: 22%; --bloom-b: 10%;
+  }
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(closest-side, color-mix(in oklab, var(--color-bloom-warm) var(--bloom-a), transparent), transparent),
+    radial-gradient(closest-side, color-mix(in oklab, var(--color-bloom-rust) var(--bloom-b), transparent), transparent);
+  background-size: 52vmax 52vmax, 48vmax 48vmax;
+  background-position: 88% -6%, -8% 104%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+.skip { position: absolute; left: var(--space-md); top: var(--space-md); z-index: var(--z-modal); padding: var(--space-xs) var(--space-md); border-radius: var(--radius-btn);
+  background: var(--color-ink); color: var(--color-paper); transform: translateY(-200%); }
+.skip:focus-visible { transform: none; }
+.demo-note { background: var(--color-accent); color: var(--color-accent-ink); text-align: center; font-size: var(--text-sm); padding: var(--space-xs) var(--space-md); }
+
+/* Nav: edge-aligned, the badge as the wordmark's mark. */
+.nav-bar { padding-block: var(--space-lg); }
+.nav-bar .container { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
+.brand { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; font-family: var(--font-display); font-weight: 600; font-size: var(--text-md); letter-spacing: -0.01em; }
+.brand img { width: 40px; height: 40px; flex-shrink: 0; }
+.nav-bar nav { display: flex; gap: var(--space-2xs); }
+.nav-bar nav a { text-decoration: none; color: var(--color-ink-2); font-size: var(--text-sm); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-btn); white-space: nowrap;
+  transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.nav-bar nav a:hover { color: var(--color-ink); background: var(--color-paper-2); }
+.nav-bar nav a:active { transform: translateY(1px); }
+
+/* Buttons, all states. */
+.btn { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 44px; padding: 0 var(--space-md); border: 1px solid var(--color-rule); border-radius: var(--radius-btn);
+  background: var(--color-paper-3); color: var(--color-ink); font: 600 var(--text-sm)/1 var(--font-body); white-space: nowrap; text-decoration: none; cursor: pointer;
+  transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.btn:hover { border-color: var(--color-accent); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn.primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink); }
+.btn.primary:hover { background: var(--color-focus); border-color: var(--color-focus); }
+.btn.off { color: var(--color-muted); background: transparent; border-style: dashed; cursor: default; font-weight: 400; }
+.btn.off:hover { border-color: var(--color-rule); }
+.btn.big { min-height: 52px; padding: 0 var(--space-lg); font-size: var(--text-md); }
+.btns { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+
+/* Hero: Stage. The text on five columns, the colony on seven. */
+.hero { min-height: calc(100svh - 88px); display: grid; align-items: center; padding-block: var(--space-lg) var(--space-2xl); }
+.demo-note:not([hidden]) ~ main .hero { min-height: calc(100svh - 128px); }
+.hero .container { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--space-2xl); align-items: center; }
+.hero h1 { font-size: clamp(2.25rem, 3.2vw + 0.75rem, 3.75rem); line-height: 1.08; max-width: 14ch; }
+.hero .lead { color: var(--color-ink-2); margin-top: var(--space-lg); max-width: 34ch; }
+.hero .btns { margin-top: var(--space-xl); }
+.hero-art { margin: 0; justify-self: center; width: min(100%, 660px); }
+.hero-art img { width: 100%; filter: drop-shadow(var(--shadow-art)); }
+
+/* Signature: the readout, an amber tube display on a dark device face in both themes. */
+.readout { display: inline-flex; gap: var(--space-lg); margin-top: var(--space-2xl); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-inner);
+  background: var(--color-device); color: var(--color-glow); border: 1px solid var(--color-glow-ghost); }
+.readout div { display: flex; align-items: flex-end; gap: var(--space-xs); }
+.readout div + div { padding-left: var(--space-lg); border-left: 1px solid var(--color-glow-ghost); }
+.seg { position: relative; font: 34px/1 var(--font-outlier); font-variant-numeric: tabular-nums; }
+.seg::before { content: attr(data-ghost); position: absolute; inset: 0; color: var(--color-glow-ghost); }
+.seg span { position: relative; }
+.readout small { font-size: var(--text-sm); padding-bottom: var(--space-3xs); }
+@media (prefers-reduced-motion: no-preference) {
+  .seg span { animation: warm 900ms steps(1, end) both; }
+  .readout div + div .seg span { animation-delay: 160ms; }
+  @keyframes warm { 0% { opacity: 0; } 30% { opacity: .55; } 45% { opacity: .2; } 70% { opacity: .85; } 100% { opacity: 1; } }
+}
+
+section > .container > h2 { margin-bottom: var(--space-2xl); }
+
+/* Programs: one list, ready first, the workbench under a thin rule. */
+.running { padding-block: var(--space-3xl) var(--section-gap); }
+.group { background: var(--color-paper-2); border: 1px solid var(--color-rule); border-radius: var(--radius-card); overflow: hidden; }
+.prog { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: var(--space-lg); padding: var(--space-xl); align-items: start; }
+.prog + .prog { border-top: 1px solid var(--color-rule); }
+.tile { width: var(--tile); height: var(--tile); border-radius: 16px; background: var(--color-paper-3); border: 1px solid var(--color-rule); display: grid; place-items: center; flex-shrink: 0; color: var(--color-ink-2); }
+.tile img { width: 48px; height: 48px; }
+.tile svg { width: 28px; height: 28px; }
+.prog h3 { font-size: var(--text-lg); }
+.state { display: block; font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-2xs); }
+.prog p { color: var(--color-ink-2); margin-block: var(--space-sm) var(--space-md); }
+.prog.planned { grid-template-columns: minmax(0, 1fr); }
+.prog-head { display: flex; align-items: center; gap: var(--space-lg); }
+.prog-main > p, .prog-main > .btns { margin-left: calc(var(--tile) + var(--space-lg)); }
+.prog-main > p { max-width: 65ch; }
+.group-sub { font-family: var(--font-body); font-size: var(--text-md); font-weight: 600; letter-spacing: 0; color: var(--color-muted); max-width: none;
+  padding: var(--space-lg) var(--space-xl) 0; border-top: 1px solid var(--color-rule); }
+.shot { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; padding: 0; border-radius: var(--radius-inner); overflow: hidden; cursor: zoom-in;
+  border: 1px solid var(--color-rule); background: var(--color-paper); transition: border-color var(--dur-short) var(--ease-out); }
+.shot:hover { border-color: var(--color-accent); }
+.shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.shot b { position: absolute; left: var(--space-xs); bottom: var(--space-xs); display: inline-flex; align-items: center; gap: var(--space-xs); font-size: var(--text-sm); font-weight: 600;
+  background: var(--color-paper-2); color: var(--color-ink); padding: var(--space-2xs) var(--space-sm); border-radius: var(--radius-btn); }
+.shot b svg { width: 14px; height: 14px; }
+
+/* Support: a band of lighter night. */
+.support { background: var(--color-paper-2); padding-block: var(--section-gap-s); }
+.support .container { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-2xl); align-items: start; }
+.support h2 { margin-bottom: var(--space-lg); }
+.support .intro { color: var(--color-ink-2); }
+.goal { margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-rule); }
+.goal h3 { font-size: var(--text-lg); color: var(--color-glow); }
+.goal p { color: var(--color-ink-2); margin-top: var(--space-xs); }
+@media (prefers-color-scheme: light) { .goal h3 { color: var(--color-accent); } }
+.ways { border-top: 1px solid var(--color-rule); }
+.row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: var(--space-md); align-items: center; padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
+.row .tile { width: 52px; height: 52px; border-radius: var(--radius-inner); }
+.row .tile svg { width: 24px; height: 24px; }
+.row b { display: block; font-size: var(--text-lg); font-weight: 600; }
+.row small { color: var(--color-muted); font-size: var(--text-sm); }
+.crypto summary { list-style: none; cursor: pointer; }
+.crypto .row { grid-template-columns: 40px minmax(0, 1fr) auto; padding-block: var(--space-sm); }
+.crypto .row .tile { width: 40px; height: 40px; border-radius: var(--radius-btn); }
+.crypto .row b { font-size: var(--text-md); }
+.crypto .sym { font-size: var(--text-xs); }
+.crypto summary::-webkit-details-marker { display: none; }
+.crypto summary:hover b { color: var(--color-glow); }
+.crypto .sym { font-weight: 600; color: var(--color-ink); }
+.crypto .chev { transition: transform var(--dur-short) var(--ease-in-out); color: var(--color-muted); }
+.crypto[open] .chev { transform: rotate(90deg); }
+.crypto[open] summary { border-bottom: 0; }
+.addr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-lg); align-items: center; padding-block: var(--space-xs) var(--space-lg); padding-left: 56px; border-bottom: 1px solid var(--color-rule); }
+.qr { background: var(--color-qr-paper); padding: var(--space-xs); border-radius: var(--radius-inner); width: 128px; height: 128px; }
+.qr img, .qr canvas { width: 112px !important; height: 112px !important; }
+.addr code { display: block; font-size: var(--text-sm); line-height: 1.5; word-break: break-all; color: var(--color-ink); background: var(--color-paper); padding: var(--space-sm); border-radius: var(--radius-inner); margin-bottom: var(--space-sm); }
+.addr .warn { color: var(--color-glow); font-size: var(--text-sm); margin-bottom: var(--space-sm); }
+.crypto-head { font-size: var(--text-lg); margin-top: var(--space-xl); }
+.crypto-intro { color: var(--color-muted); font-size: var(--text-sm); margin-block: var(--space-xs) var(--space-md); }
+
+/* Footer: one closing sentence, the links beneath. */
+footer { padding-block: var(--section-gap-s) var(--space-2xl); }
+footer .container { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-lg); }
+footer .bye { font-family: var(--font-display); font-weight: 600; font-size: var(--text-section); line-height: 1.08; letter-spacing: -0.02em; max-width: 14ch; }
+footer nav { display: flex; gap: var(--space-lg); font-size: var(--text-sm); color: var(--color-ink-2); }
+footer nav a { text-underline-offset: 0.2em; }
+footer nav a:hover { color: var(--color-ink); }
+
+/* Screenshot viewer. */
+dialog { border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-paper-2); color: var(--color-ink); padding: 0; width: min(1100px, 94%); max-height: 92dvh; }
+dialog::backdrop { background: var(--color-scrim); }
+dialog header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-rule); }
+dialog header span { font-size: var(--text-sm); font-weight: 600; }
+.x { background: none; border: 0; color: var(--color-ink-2); cursor: pointer; padding: var(--space-xs); border-radius: var(--radius-btn); display: grid; }
+.x:hover { color: var(--color-ink); background: var(--color-paper-3); }
+.stage { position: relative; display: grid; place-items: center; background: var(--color-paper); padding: var(--space-md); min-height: 240px; }
+.stage img { max-width: 100%; max-height: 62dvh; border-radius: var(--radius-inner); }
+.nav { position: absolute; top: 50%; translate: 0 -50%; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--color-rule); background: var(--color-paper-3); color: var(--color-ink); cursor: pointer; display: grid; place-items: center; }
+.nav:hover { border-color: var(--color-accent); }
+.nav.prev { left: var(--space-sm); } .nav.next { right: var(--space-sm); }
+.cap { padding: var(--space-sm) var(--space-md) 0; color: var(--color-ink-2); font-size: var(--text-sm); }
+.thumbs { display: flex; gap: var(--space-xs); padding: var(--space-sm) var(--space-md) var(--space-md); overflow-x: auto; }
+.thumbs button { flex: none; width: 96px; height: 64px; padding: 0; border-radius: var(--radius-btn); overflow: hidden; border: 2px solid transparent; background: var(--color-paper); cursor: pointer; }
+.thumbs button[aria-current="true"] { border-color: var(--color-accent); }
+.thumbs img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+.toast { position: fixed; left: 50%; bottom: var(--space-lg); translate: -50% 0; z-index: var(--z-toast); background: var(--color-paper-3); border: 1px solid var(--color-rule);
+  padding: var(--space-xs) var(--space-md); border-radius: var(--radius-btn); font-size: var(--text-sm); opacity: 0; transition: opacity var(--dur-short) var(--ease-out); pointer-events: none; }
+.toast.show { opacity: 1; }
+
+@media (max-width: 60rem) {
+  .hero .container, .support .container { grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); }
+  .prog, .prog.planned { grid-template-columns: minmax(0, 1fr); padding: var(--space-lg); gap: var(--space-md); }
+  .prog-head { gap: var(--space-md); }
+  .prog-main > p, .prog-main > .btns { margin-left: 0; }
+  .prog .tile { width: 52px; height: 52px; border-radius: var(--radius-inner); }
+  .prog .shot { max-width: 480px; }
+  .group-sub { padding: var(--space-md) var(--space-lg) 0; }
+  .hero { min-height: 0; }
+  .hero-art { order: -1; width: min(100%, 360px); }
+  .readout { margin-top: var(--space-xl); }
+  .addr { grid-template-columns: minmax(0, 1fr); padding-left: 0; }
+}
+@media (max-width: 40rem) {
+  .nav-bar nav a.opt { display: none; }
+  .brand span { display: none; }
+  .readout { gap: var(--space-md); padding: var(--space-sm) var(--space-md); }
+  .readout div + div { padding-left: var(--space-md); }
+  .seg { font-size: 28px; }
+  .row { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .row .tile { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="demo-note" id="demoNote" hidden>Test page: the PayPal link and the wallet addresses are placeholders. Do not send anything yet.</div>
+
+<header class="nav-bar">
+  <div class="container">
+    <a class="brand" href="./"><img src="img/logo-badge.png" alt=""><span>electronic-mars</span></a>
+    <nav aria-label="Main">
+      <a class="opt" href="#programs">Programs</a>
+      <a href="#support">Support</a>
+      <a href="https://github.com/electronic-mars">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="container">
+      <div>
+        <h1>Utilities that make everyday things simpler.</h1>
+        <p class="lead">No accounts and no telemetry. For Windows now, with macOS and iOS on the way.</p>
+        <div class="btns">
+          <a class="btn primary big" href="#support"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Ways to say thanks</a>
+        </div>
+        <div class="readout" aria-label="Programs">
+          <div><span class="seg" data-ghost="88" id="countDigits"><span>02</span></span><small>ready</small></div>
+          <div><span class="seg" data-ghost="88" id="countNext"><span>03</span></span><small>on the way</small></div>
+        </div>
+      </div>
+      <figure class="hero-art"><img src="img/colony.webp" width="1040" height="1040" fetchpriority="high" alt="Settlers building a colony on Mars, with Saturn behind"></figure>
+    </div>
+  </section>
+
+  <section class="running" id="programs">
+    <div class="container">
+      <h2>Programs</h2>
+      <div class="group">
+        <div id="progList"></div>
+        <h3 class="group-sub" id="workbench">On the workbench</h3>
+        <div id="benchList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="support" id="support">
+    <div class="container">
+      <div>
+        <h2>Ways to say thanks</h2>
+        <p class="intro">If one of my programs saved you some time and you want to say thanks, pick whatever is easiest for you. It buys time to keep working on them.</p>
+        <div class="goal" id="goal" hidden></div>
+      </div>
+      <div>
+        <div class="ways" id="payList"></div>
+        <div id="cryptoBlock" hidden>
+          <h3 class="crypto-head">Crypto</h3>
+          <p class="crypto-intro">Send only on the network shown next to each coin. Coins sent on another network are lost.</p>
+          <div class="ways" id="cryptoList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <p class="bye">Thank you for being here.</p>
+    <nav aria-label="Footer">
+      <a href="#programs">Programs</a>
+      <a href="#support">Support</a>
+      <a href="https://github.com/electronic-mars">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<dialog id="viewer" aria-label="Screenshots">
+  <header><span id="viewerTitle"></span>
+    <button class="x" type="button" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </header>
+  <div class="stage">
+    <img id="viewerImg" src="img/mas/devices.png" alt="">
+    <button class="nav prev" type="button" aria-label="Previous screenshot"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button class="nav next" type="button" aria-label="Next screenshot"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="cap" id="viewerCap"></div>
+  <div class="thumbs" id="viewerThumbs"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* Everything that changes lives here. Leave a link empty and its button shows
+   as "soon" (stores) or does not render at all (ways to pay). A program with a
+   download link sits at the top of the list; the rest go under
+   "On the workbench". */
+const SITE = {
+  // true fills empty wallet addresses and the PayPal link with placeholders and shows a banner. false before publishing.
+  test: true,
+  // Share copies this address plus the program's #id.
+  url: "https://electronic-mars.github.io/",
+  programs: [
+    {
+      id: "mas",
+      name: "Master Audio Switcher",
+      icon: "img/mas/icon.png",
+      state: "Available",
+      text: "Switches sound between speakers and headphones with one click on the tray icon. Knows when a wireless headset is switched on, even when Windows does not. A volume mixer, media keys, a global shortcut and fifteen languages.",
+      microsoftStore: "https://apps.microsoft.com/detail/9N9J77WKQ4X6",
+      appStore: null,
+      download: "https://github.com/electronic-mars/mas/releases/latest",
+      source: "https://github.com/electronic-mars/mas",
+      shots: [
+        ["img/mas/devices.png", "Devices: the volume knob, the display, and the outputs that take turns"],
+        ["img/mas/mixer.png", "The volume mixer, one slider per program"],
+        ["img/mas/settings.png", "Settings"],
+      ],
+    },
+    {
+      id: "mcd",
+      name: "Master Control Dock",
+      icon: "img/mcd/icon.png",
+      state: "Available",
+      text: "A dock for the edge of your screen: pinned programs and folders, live readings for CPU, memory, disks and network, and temperatures for every part of the machine that reports one. Built so widgets never go missing on a second monitor. Press any reading to see its last hour.",
+      microsoftStore: "",
+      appStore: null,
+      download: "https://github.com/electronic-mars/MCD/releases/latest",
+      source: "https://github.com/electronic-mars/MCD",
+      shots: [
+        ["img/mcd/widgets.png", "Every widget, drawn the way it looks on the bar"],
+        ["img/mcd/history.png", "Press a reading to see its last hour"],
+        ["img/mcd/bar.png", "The bar along the top of a screen"],
+      ],
+    },
+    {
+      id: "oy-player",
+      name: "OY Player",
+      icon: "img/oy/icon.png",
+      state: "Preview",
+      text: "A video player that opens any format. Quick editing is built in, and so are screenshots: take one from any frame and touch it up right there.",
+      microsoftStore: "", appStore: null,
+      download: "https://github.com/electronic-mars/OY/releases/latest",
+      source: "https://github.com/electronic-mars/OY",
+      shots: [
+        ["img/oy/player.webp", "The player and its control strip"],
+        ["img/oy/draw.webp", "Text, arrows and shapes drawn over a chosen stretch of the video"],
+        ["img/oy/cut.webp", "Two pieces marked for a cut that saves without re-encoding"],
+      ],
+    },
+    {
+      id: "translator",
+      name: "Quick translator",
+      icon: "",
+      glyph: "lang",
+      state: "Planned, name to come",
+      text: "Lives in the tray and translates in a moment. It uses the free translators you already know, such as Google Translate and DeepL, and you pick which ones in settings.",
+      microsoftStore: null, appStore: null, download: "", source: "", shots: [],
+    },
+    {
+      id: "screenshots",
+      name: "Quick screenshots",
+      icon: "",
+      glyph: "snip",
+      state: "Planned, name to come",
+      text: "Takes a screenshot in a moment, with plenty of ways to mark it up, and shares it straight from where you took it.",
+      microsoftStore: null, appStore: null, download: "", source: "", shots: [],
+    },
+  ],
+  pay: [
+    { name: "Donatello", note: "Visa or Mastercard from the EU. Once, any amount.", url: "https://donatello.to/ElectronicMARS", icon: "card" },
+    { name: "Patreon", note: "Monthly. Cancel whenever.", url: "https://www.patreon.com/ElectronicMARS", icon: "heart" },
+    { name: "PayPal", note: "From any country, by card or PayPal balance. Once, any amount.", url: "", icon: "wallet" },
+    { name: "Ko-fi", note: "Card or PayPal, from any country.", url: "", icon: "cup" },
+  ],
+  crypto: [
+    { sym: "USDT", name: "Tether", net: "TRON (TRC-20)", address: "" },
+    { sym: "USDC", name: "USD Coin", net: "Ethereum (ERC-20)", address: "" },
+    { sym: "BTC", name: "Bitcoin", net: "Bitcoin", address: "" },
+    { sym: "ETH", name: "Ether", net: "Ethereum", address: "" },
+    { sym: "XRP", name: "XRP", net: "XRP Ledger", address: "", memo: "" },
+    { sym: "XLM", name: "Stellar", net: "Stellar", address: "", memo: "" },
+    { sym: "XMR", name: "Monero", net: "Monero", address: "" },
+    { sym: "DOGE", name: "Dogecoin", net: "Dogecoin", address: "" },
+  ],
+  // What support pays for next. null hides the block.
+  goal: {
+    title: "Next: fuller video editing in OY Player",
+    text: "Quick editing is already built into OY Player. Support buys the time to grow it into a wider set of tools for editing video.",
+  },
+};
+
+// Test fill: empty wallet addresses and the PayPal link get placeholders, and a banner says so. Set test: false before publishing.
+if (SITE.test) {
+  document.getElementById("demoNote").hidden = false;
+  SITE.crypto.forEach(c => { c.address = c.address || `TEST-${c.sym}-` + "x".repeat(34 - c.sym.length); if ("memo" in c) c.memo = c.memo || "TEST-MEMO"; });
+  SITE.pay.forEach(p => { if (p.name === "PayPal") p.url = p.url || "test"; });
+}
+
+const svg = d => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const ICON = {
+  store: svg('<path d="M4 8h16l-1 12H5L4 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'),
+  apple: svg('<path d="M16 3c-1.5.2-3 1.4-3 3 1.6 0 3-1.3 3-3zM12 7c-1 0-2-.6-3-.6C6.5 6.4 5 8.6 5 11.5 5 15.6 7.6 20 9.3 20c1 0 1.4-.6 2.7-.6s1.6.6 2.7.6c1.7 0 3.4-3.2 4-5-2-1-2.6-4.6.3-6-1-1.6-2.6-2.4-4-2.4-1 0-2 .6-3 .6z"/>'),
+  down: svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
+  code: svg('<path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/>'),
+  pics: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/>'),
+  card: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>'),
+  heart: svg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
+  cup: svg('<path d="M4 8h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6V8zM17 10h1.5a2.5 2.5 0 0 1 0 5H17"/>'),
+  play: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>'),
+  lang: svg('<path d="M4 5h8M8 3v2M10 5c-.6 3.4-2.8 6-6 7.5M6 8.5c1 1.8 2.6 3.2 4.5 4"/><path d="M12 21l4-9 4 9M13.5 18h5"/>'),
+  snip: svg('<path d="M7 3v14h14"/><path d="M3 7h14v14"/>'),
+  share: svg('<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>'),
+  wallet: svg('<path d="M4 7a2 2 0 0 1 2-2h11v4"/><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M16 14.5h1"/>'),
+  coins: svg('<ellipse cx="9" cy="7" rx="5" ry="2.5"/><path d="M4 7v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V7"/><path d="M10 15.5c.9 1.2 2.9 2 5 2 2.8 0 5-1.1 5-2.5v-4c0-1.4-2.2-2.5-5-2.5"/>'),
+  copy: svg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+};
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+function storeButton(label, icon, url) {
+  if (url === null || url === undefined) return "";
+  return url ? `<a class="btn primary" href="${esc(url)}">${icon}${label}</a>`
+             : `<span class="btn off">${icon}${label}, soon</span>`;
+}
+const tile = p => p.icon ? `<div class="tile"><img src="${esc(p.icon)}" alt=""></div>` : `<div class="tile">${ICON[p.glyph] || ICON.play}</div>`;
+const buttons = p => [
+  storeButton("Microsoft Store", ICON.store, p.microsoftStore),
+  storeButton("App Store", ICON.apple, p.appStore),
+  p.download ? `<a class="btn" href="${esc(p.download)}">${ICON.down}Download</a>` : "",
+  p.source ? `<a class="btn" href="${esc(p.source)}">${ICON.code}Source</a>` : "",
+  `<button class="btn" type="button" data-copy="${esc(SITE.url + "#" + p.id)}" data-done="Link copied">${ICON.share}Share</button>`,
+].join("");
+
+const progList = document.getElementById("progList"), benchList = document.getElementById("benchList");
+SITE.programs.forEach((p, i) => {
+  const ready = Boolean(p.download);
+  const shot = p.shots.length
+    ? `<button class="shot" type="button" data-prog="${i}" aria-label="Screenshots of ${esc(p.name)}"><img src="${esc(p.shots[0][0])}" alt="" loading="lazy"><b>${ICON.pics}${p.shots.length} screenshots</b></button>`
+    : "";
+  (ready ? progList : benchList).insertAdjacentHTML("beforeend", `
+    <article class="prog${shot ? "" : " planned"}" id="${esc(p.id)}">
+      <div class="prog-main">
+        <div class="prog-head">${tile(p)}<div><h3>${esc(p.name)}</h3><span class="state">${esc(p.state)}</span></div></div>
+        <p>${esc(p.text)}</p>
+        <div class="btns">${buttons(p)}</div>
+      </div>
+      ${shot}
+    </article>`);
+});
+document.getElementById("workbench").hidden = !benchList.children.length;
+
+// The readout counts what is on the list.
+const shipped = SITE.programs.filter(p => p.download).length;
+document.querySelector("#countDigits span").textContent = String(shipped).padStart(2, "0");
+document.querySelector("#countNext span").textContent = String(SITE.programs.length - shipped).padStart(2, "0");
+
+const payList = document.getElementById("payList");
+SITE.pay.filter(p => p.url).forEach(p => payList.insertAdjacentHTML("beforeend", `
+  <div class="row">
+    <div class="tile">${ICON[p.icon]}</div>
+    <div><b>${esc(p.name)}</b><small>${esc(p.note)}</small></div>
+    ${p.url === "test" ? `<span class="btn" aria-disabled="true">Open ${esc(p.name)}</span>` : `<a class="btn" href="${esc(p.url)}">Open ${esc(p.name)}</a>`}
+  </div>`));
+
+// Coins with an address get their own list, one row each that opens to its QR code. Until there is one, crypto is a single "soon" line among the ways to pay.
+const coins = SITE.crypto.filter(c => c.address);
+if (!coins.length && SITE.crypto.length) payList.insertAdjacentHTML("beforeend", `
+  <div class="row">
+    <div class="tile">${ICON.coins}</div>
+    <div><b>Crypto</b><small>${SITE.crypto.map(c => esc(c.sym)).join(", ")}</small></div>
+    <span class="btn off">soon</span>
+  </div>`);
+if (coins.length) {
+  const css = getComputedStyle(document.documentElement);
+  document.getElementById("cryptoBlock").hidden = false;
+  document.getElementById("cryptoList").innerHTML = coins.map(c => `
+    <details class="crypto">
+      <summary class="row">
+        <div class="tile"><span class="sym">${esc(c.sym)}</span></div>
+        <div><b>${esc(c.name)}</b><small>Network: ${esc(c.net)}</small></div>
+        <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </summary>
+      <div class="addr">
+        <div class="qr" data-qr="${esc(c.address)}" role="img" aria-label="QR code of the ${esc(c.name)} address"></div>
+        <div>
+          <code>${esc(c.address)}</code>
+          ${c.memo ? `<p class="warn">Include this memo or the payment is lost: <b>${esc(c.memo)}</b></p>` : ""}
+          <div class="btns">
+            <button class="btn" type="button" data-copy="${esc(c.address)}">${ICON.copy}Copy address</button>
+            ${c.memo ? `<button class="btn" type="button" data-copy="${esc(c.memo)}">${ICON.copy}Copy memo</button>` : ""}
+          </div>
+        </div>
+      </div>
+    </details>`).join("");
+  // Draw each QR the first time its row opens.
+  document.querySelectorAll("details.crypto").forEach(d => d.addEventListener("toggle", () => {
+    const el = d.querySelector("[data-qr]");
+    if (d.open && !el.hasChildNodes()) new QRCode(el, { text: el.dataset.qr, width: 112, height: 112,
+      colorDark: css.getPropertyValue("--color-qr-ink").trim(), colorLight: css.getPropertyValue("--color-qr-paper").trim() });
+  }));
+}
+
+if (SITE.goal) {
+  const goal = document.getElementById("goal");
+  goal.hidden = false;
+  goal.innerHTML = `<h3>${esc(SITE.goal.title)}</h3><p>${esc(SITE.goal.text)}</p>`;
+}
+
+const toast = document.getElementById("toast");
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-copy]");
+  if (!b) return;
+  navigator.clipboard.writeText(b.dataset.copy).then(() => {
+    toast.textContent = b.dataset.done || "Copied";
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1400);
+  });
+});
+
+// Screenshot viewer.
+const viewer = document.getElementById("viewer"), vImg = document.getElementById("viewerImg"),
+      vCap = document.getElementById("viewerCap"), vThumbs = document.getElementById("viewerThumbs");
+let shots = [], at = 0;
+function show(k) {
+  at = (k + shots.length) % shots.length;
+  vImg.src = shots[at][0];
+  vImg.alt = vCap.textContent = shots[at][1];
+  [...vThumbs.children].forEach((t, j) => t.setAttribute("aria-current", j === at));
+}
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-prog]");
+  if (!s) return;
+  const p = SITE.programs[s.dataset.prog];
+  shots = p.shots;
+  document.getElementById("viewerTitle").textContent = p.name;
+  vThumbs.innerHTML = shots.map(x => `<button type="button" aria-label="${esc(x[1])}"><img src="${esc(x[0])}" alt=""></button>`).join("");
+  [...vThumbs.children].forEach((t, j) => t.addEventListener("click", () => show(j)));
+  viewer.querySelectorAll(".nav").forEach(n => n.hidden = shots.length < 2);
+  show(0);
+  viewer.showModal();
+});
+viewer.querySelector(".prev").addEventListener("click", () => show(at - 1));
+viewer.querySelector(".next").addEventListener("click", () => show(at + 1));
+viewer.querySelector("[data-close]").addEventListener("click", () => viewer.close());
+viewer.addEventListener("click", e => { if (e.target === viewer) viewer.close(); });
+viewer.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") show(at - 1);
+  if (e.key === "ArrowRight") show(at + 1);
+});
+</script>
+</body>
+</html>
