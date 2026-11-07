@@ -610,7 +610,7 @@ viewer.addEventListener("keydown", e => {
 });
 
 // Stars behind the hero: they twinkle, now and then one goes out and lights up elsewhere, and every few seconds one falls.
-// Still under reduced motion; the loop stops while the hero is off screen.
+// Twinkling only changes brightness, so it stays under reduced motion; falling stars move, so they do not. The loop stops while the hero is off screen.
 (() => {
   const cv = document.querySelector(".hero .stars"), cx = cv.getContext("2d");
   const still = matchMedia("(prefers-reduced-motion: reduce)");
@@ -628,7 +628,7 @@ viewer.addEventListener("keydown", e => {
   const star = (t, old) => {
     const life = 8000 + Math.random() * 22000;
     return { ...spot(), r: Math.random() ** 3 * 1.6 + 0.7, a: Math.random() * 0.45 + 0.55,
-      sp: Math.random() * 1.5 + 0.4, ph: Math.random() * 6.3, life, born: t - (old ? Math.random() * life : 0) };
+      sp: Math.random() * 1.8 + 0.6, ph: Math.random() * 6.3, life, born: t - (old ? Math.random() * life : 0) };
   };
   function size() {
     const d = Math.min(devicePixelRatio || 1, 2);
@@ -640,20 +640,20 @@ viewer.addEventListener("keydown", e => {
     stars = Array.from({ length: Math.min(150, Math.round(w * h / 9000)) }, () => star(t, true));
   }
   function draw(t) {
-    const moving = !still.matches, ink = root.getPropertyValue("--color-ink").trim(), k = +root.getPropertyValue("--star-alpha") || 1;
+    const ink = root.getPropertyValue("--color-ink").trim(), k = +root.getPropertyValue("--star-alpha") || 1;
     cx.clearRect(0, 0, w, h);
     cx.fillStyle = ink;
     stars.forEach((s, i) => {
-      if (moving && t - s.born > s.life) s = stars[i] = star(t, false);
+      if (t - s.born > s.life) s = stars[i] = star(t, false);
       const age = t - s.born;
-      const fade = moving ? Math.max(0, Math.min(1, age / 1500, (s.life - age) / 1500)) : 1;
-      const tw = moving ? 0.6 + 0.4 * Math.sin(t / 1000 * s.sp + s.ph) : 1;
+      const fade = Math.max(0, Math.min(1, age / 1500, (s.life - age) / 1500));
+      const tw = 0.55 + 0.45 * Math.sin(t / 1000 * s.sp + s.ph);
       cx.globalAlpha = s.a * tw * fade * k;
       cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.283); cx.fill();
       // The biggest stars get a soft halo.
       if (s.r > 1.6) { cx.globalAlpha *= 0.15; cx.beginPath(); cx.arc(s.x, s.y, s.r * 3, 0, 6.283); cx.fill(); }
     });
-    if (!moving) return;
+    if (still.matches) return;
     if (!shot && t > nextShot) {
       const ang = (Math.random() < 0.5 ? 0.35 : Math.PI - 0.35) + (Math.random() - 0.5) * 0.3;
       shot = { x: w * (0.15 + Math.random() * 0.7), y: h * Math.random() * 0.4, dx: Math.cos(ang), dy: Math.sin(ang),
@@ -675,8 +675,7 @@ viewer.addEventListener("keydown", e => {
   const frame = t => { if (t - last > 15) { last = t; draw(t); } raf = requestAnimationFrame(frame); };
   function play() {
     cancelAnimationFrame(raf);
-    if (still.matches) draw(performance.now());
-    else if (seen) raf = requestAnimationFrame(frame);
+    if (seen) raf = requestAnimationFrame(frame);
   }
   new ResizeObserver(() => { size(); play(); }).observe(cv);
   new IntersectionObserver(([e]) => { seen = e.isIntersecting; play(); }).observe(cv);
