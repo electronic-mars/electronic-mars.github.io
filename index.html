@@ -41,6 +41,7 @@
 /* The first demo's night sky, a lighter night for what sits on it, one Mars orange and an amber tube glow. */
 :root {
   --color-device: #17130F; --color-glow: #FFB547; --color-glow-ghost: #3A2D1C;
+  --color-device-ink: #F3E9DD; --color-device-muted: #A89A8A; --color-screen: #0A0F18;
   --color-bloom-warm: #FFB547; --color-bloom-rust: #E8642C;
   --color-qr-ink: #1A1310; --color-qr-paper: #FBF6EE;
   --color-scrim: rgb(9 14 24 / 0.8);
@@ -157,6 +158,35 @@ section > .container > h2 { margin-bottom: var(--space-2xl); }
 .shot b { position: absolute; left: var(--space-xs); bottom: var(--space-xs); display: inline-flex; align-items: center; gap: var(--space-xs); font-size: var(--text-sm); font-weight: 600;
   background: var(--color-paper-2); color: var(--color-ink); padding: var(--space-2xs) var(--space-sm); border-radius: var(--radius-btn); }
 .shot b svg { width: 14px; height: 14px; }
+/* The monitor: the program at work on a screen set in the readout's dark device face, in both themes.
+ * Short silent clips; the switches beside it pick one, and their amber digits count down what is left of it. */
+.monitor { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: var(--space-md); padding: var(--space-md);
+  border-radius: var(--radius-card); background: var(--color-device); border: 1px solid var(--color-glow-ghost); color: var(--color-device-ink); }
+.monitor.wide { grid-template-columns: minmax(0, 1fr); }
+.screen { position: relative; overflow: hidden; height: min(560px, 135vw); border-radius: var(--radius-inner);
+  background: radial-gradient(closest-side, rgb(232 100 44 / 0.16), transparent) 50% 55% / 85% 85% no-repeat, var(--color-screen); }
+.monitor.wide .screen { height: auto; aspect-ratio: 16 / 9; }
+.screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.monitor:not(.wide) .screen video { inset: var(--space-lg); width: calc(100% - 2 * var(--space-lg)); height: calc(100% - 2 * var(--space-lg)); }
+.hold { position: absolute; right: var(--space-sm); bottom: var(--space-sm); width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
+  background: rgb(23 19 15 / 0.8); color: var(--color-glow); border: 1px solid var(--color-glow-ghost); transition: border-color var(--dur-short) var(--ease-out); }
+.hold:hover { border-color: var(--color-glow); }
+.chans { display: grid; gap: var(--space-xs); align-content: start; }
+.monitor.wide .chans { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.chan { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; align-content: start; gap: var(--space-2xs) var(--space-sm); width: 100%;
+  padding: var(--space-sm) var(--space-md) var(--space-md); text-align: left; font: inherit; color: var(--color-device-muted); cursor: pointer;
+  background: transparent; border: 1px solid transparent; border-radius: var(--radius-inner);
+  transition: color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.chan:hover { color: var(--color-device-ink); border-color: var(--color-glow-ghost); }
+.chan[aria-pressed="true"] { color: var(--color-device-ink); border-color: var(--color-glow-ghost); background: rgb(255 181 71 / 0.06); }
+.chan b { font-weight: 600; }
+.chan small { grid-column: 1 / -1; font-size: var(--text-sm); color: var(--color-device-muted); }
+.chan .seg { font-size: 15px; }
+.chan .seg span { color: color-mix(in oklab, var(--color-glow) 45%, transparent); }
+.chan[aria-pressed="true"] .seg span { color: var(--color-glow); }
+.chan::before, .chan::after { content: ""; position: absolute; left: var(--space-md); right: var(--space-md); bottom: var(--space-xs); height: 2px; border-radius: 1px; }
+.chan::before { background: var(--color-glow-ghost); }
+.chan::after { background: var(--color-glow); transform-origin: left; transform: scaleX(var(--p, 0)); transition: transform 250ms linear; }
 
 /* Support: a band of lighter night. */
 .support { background: var(--color-paper-2); padding-block: var(--section-gap-s); }
@@ -234,6 +264,9 @@ dialog header span { font-size: var(--text-sm); font-weight: 600; }
   .prog-main > p, .prog-main > .btns { margin-left: 0; }
   .prog .tile { width: 52px; height: 52px; border-radius: var(--radius-inner); }
   .prog .shot { max-width: 480px; }
+  .monitor { grid-template-columns: minmax(0, 1fr); padding: var(--space-sm); }
+  .monitor:not(.wide) .screen { height: 118vw; }
+  .monitor:not(.wide) .screen video { inset: var(--space-sm); width: calc(100% - 2 * var(--space-sm)); height: calc(100% - 2 * var(--space-sm)); }
   .group-sub { padding: var(--space-md) var(--space-lg) 0; }
   .hero { min-height: 0; }
   .hero-art { order: -1; width: min(100%, 360px); }
@@ -370,10 +403,20 @@ const SITE = {
       appStore: null,
       download: "https://github.com/electronic-mars/mas/releases/latest",
       source: "https://github.com/electronic-mars/mas",
+      // A loop of the program at work: path without extension (.webm, .mp4, .jpg next to each other), width, height, what it shows.
+      // Clips of the program at work: path without extension (.webm, .mp4 and the .jpg still next to each other), width, height, seconds, name, what it shows.
+      demos: [
+        ["img/mas/demo-switch", 532, 918, 18.65, "Switching", "A click moves the sound. Switch a headset on and it takes the sound and the microphone."],
+        ["img/mas/demo-mixer", 532, 918, 19.6, "Mixer and themes", "Each program at its own volume, then light, dark or as Windows has it."],
+        ["img/mas/demo-compact", 550, 292, 8.16, "Compact window", "The knob, the player and mute in a window the size of a remote."],
+      ],
       shots: [
         ["img/mas/devices.png", "Devices: the volume knob, the display, and the outputs that take turns"],
+        ["img/mas/headset.png", "A wireless headset switched on takes the sound and the microphone"],
+        ["img/mas/switch.png", "After a switch, a card says where the sound went"],
         ["img/mas/mixer.png", "The volume mixer, one slider per program"],
-        ["img/mas/settings.png", "Settings"],
+        ["img/mas/light.png", "Settings, in the light theme"],
+        ["img/mas/compact.png", "The compact window: the knob, the player and mute"],
       ],
     },
     {
@@ -386,10 +429,16 @@ const SITE = {
       appStore: null,
       download: "https://github.com/electronic-mars/MCD/releases/latest",
       source: "https://github.com/electronic-mars/MCD",
+      demos: [
+        ["img/mcd/demo-bar", 1600, 900, 18.93, "The bar", "Readings go amber at 75 and red at 100. Press one to see its last hour."],
+        ["img/mcd/demo-settings", 1600, 900, 29.04, "Settings", "Drag a widget onto the bar, try a ready-made layout, pick a theme and a colour."],
+      ],
       shots: [
         ["img/mcd/widgets.png", "Every widget, drawn the way it looks on the bar"],
+        ["img/mcd/bar.png", "The bar along the top of a screen: a reading at 100 turns red, with a warning"],
         ["img/mcd/history.png", "Press a reading to see its last hour"],
-        ["img/mcd/bar.png", "The bar along the top of a screen"],
+        ["img/mcd/volume.png", "The volume, the microphone and the brightness answer from the bar"],
+        ["img/mcd/appearance.png", "Light or dark, and the Windows accent on the readings"],
       ],
     },
     {
@@ -472,6 +521,8 @@ const ICON = {
   share: svg('<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>'),
   wallet: svg('<path d="M4 7a2 2 0 0 1 2-2h11v4"/><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M16 14.5h1"/>'),
   coins: svg('<ellipse cx="9" cy="7" rx="5" ry="2.5"/><path d="M4 7v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V7"/><path d="M10 15.5c.9 1.2 2.9 2 5 2 2.8 0 5-1.1 5-2.5v-4c0-1.4-2.2-2.5-5-2.5"/>'),
+  pause: svg('<path d="M9 6v12M15 6v12"/>'),
+  resume: svg('<path d="M8 5.5v13l10.5-6.5z"/>'),
   copy: svg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
 };
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
@@ -491,6 +542,12 @@ const buttons = p => [
 ].join("");
 
 const progList = document.getElementById("progList"), benchList = document.getElementById("benchList");
+const clock = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+const monitor = (p, i) => p.demos ? `
+      <div class="monitor${p.demos.every(d => d[1] > d[2]) ? " wide" : ""}" role="group" aria-label="${esc(p.name)} at work" data-demo="${i}">
+        <div class="screen"><video muted playsinline preload="none"></video><button class="hold" type="button"></button></div>
+        <div class="chans">${p.demos.map(d => `<button class="chan" type="button" aria-pressed="false"><b>${esc(d[4])}</b><span class="seg" data-ghost="8:88"><span>${clock(d[3])}</span></span><small>${esc(d[5])}</small></button>`).join("")}</div>
+      </div>` : "";
 SITE.programs.forEach((p, i) => {
   const ready = Boolean(p.download);
   const shot = p.shots.length
@@ -504,6 +561,7 @@ SITE.programs.forEach((p, i) => {
         <div class="btns">${buttons(p)}</div>
       </div>
       ${shot}
+      ${monitor(p, i)}
     </article>`);
 });
 document.getElementById("workbench").hidden = !benchList.children.length;
@@ -577,6 +635,45 @@ document.addEventListener("click", e => {
     setTimeout(() => toast.classList.remove("show"), 1400);
   });
 });
+
+// The monitors: a clip plays only while its monitor is on screen, and runs into the next one, the last back to the first.
+// Under reduced motion nothing starts by itself; a still stays until the visitor presses play or picks a clip.
+{
+  const still = matchMedia("(prefers-reduced-motion: reduce)");
+  const kind = document.createElement("video").canPlayType("video/webm") ? "webm" : "mp4";
+  document.querySelectorAll(".monitor").forEach(m => {
+    const clips = SITE.programs[m.dataset.demo].demos, v = m.querySelector("video"), hold = m.querySelector(".hold"), chans = [...m.querySelectorAll(".chan")];
+    let at = 0, seen = false, held = still.matches;
+    const sync = () => {
+      seen && !held ? v.play().catch(() => {}) : v.pause();
+      hold.innerHTML = held ? ICON.resume : ICON.pause;
+      hold.setAttribute("aria-label", held ? "Play" : "Pause");
+    };
+    const pick = k => {
+      at = k;
+      v.poster = clips[k][0] + ".jpg";
+      v.src = clips[k][0] + "." + kind;
+      v.setAttribute("aria-label", clips[k][5]);
+      chans.forEach((c, j) => {
+        c.setAttribute("aria-pressed", j === k);
+        c.style.setProperty("--p", 0);
+        c.querySelector(".seg span").textContent = clock(clips[j][3]);
+      });
+      sync();
+    };
+    v.addEventListener("timeupdate", () => {
+      if (!v.duration) return;
+      chans[at].style.setProperty("--p", v.currentTime / v.duration);
+      chans[at].querySelector(".seg span").textContent = clock(Math.ceil(v.duration - v.currentTime));
+    });
+    v.addEventListener("ended", () => pick((at + 1) % clips.length));
+    chans.forEach((c, k) => c.addEventListener("click", () => { held = false; pick(k); }));
+    hold.addEventListener("click", () => { held = !held; sync(); });
+    still.addEventListener("change", () => { held = still.matches; sync(); });
+    new IntersectionObserver(([e]) => { seen = e.isIntersecting; sync(); }, { threshold: 0.35 }).observe(m);
+    pick(0);
+  });
+}
 
 // Screenshot viewer.
 const viewer = document.getElementById("viewer"), vImg = document.getElementById("viewerImg"),
