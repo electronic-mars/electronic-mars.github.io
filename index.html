@@ -184,8 +184,13 @@ section > .container > h2 { margin-bottom: var(--space-2xl); }
 .qr img, .qr canvas { width: 112px !important; height: 112px !important; }
 .addr code { display: block; font-size: var(--text-sm); line-height: 1.5; word-break: break-all; color: var(--color-ink); background: var(--color-paper); padding: var(--space-sm); border-radius: var(--radius-inner); margin-bottom: var(--space-sm); }
 .addr .warn { color: var(--color-glow); font-size: var(--text-sm); margin-bottom: var(--space-sm); }
-.crypto-head { font-size: var(--text-lg); margin-top: var(--space-xl); }
-.crypto-intro { color: var(--color-muted); font-size: var(--text-sm); margin-block: var(--space-xs) var(--space-md); }
+.crypto-all > summary { list-style: none; cursor: pointer; }
+.crypto-all > summary::-webkit-details-marker { display: none; }
+.crypto-all > summary:hover b { color: var(--color-glow); }
+.crypto-all > summary .chev { transition: transform var(--dur-short) var(--ease-in-out); color: var(--color-muted); }
+.crypto-all[open] > summary .chev { transform: rotate(90deg); }
+.crypto-body { padding-left: calc(52px + var(--space-md)); }
+.crypto-intro { color: var(--color-muted); font-size: var(--text-sm); margin-block: var(--space-md) var(--space-xs); }
 
 /* Footer: one closing sentence, the links beneath. */
 footer { padding-block: var(--section-gap-s) var(--space-2xl); }
@@ -238,6 +243,7 @@ dialog header span { font-size: var(--text-sm); font-weight: 600; }
   .seg { font-size: 28px; }
   .row { grid-template-columns: 44px minmax(0, 1fr) auto; }
   .row .tile { width: 44px; height: 44px; }
+  .crypto-body { padding-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
@@ -295,11 +301,17 @@ dialog header span { font-size: var(--text-sm); font-weight: 600; }
       </div>
       <div>
         <div class="ways" id="payList"></div>
-        <div id="cryptoBlock" hidden>
-          <h3 class="crypto-head">Crypto</h3>
-          <p class="crypto-intro">Send only on the network shown next to each coin. Coins sent on another network are lost.</p>
-          <div class="ways" id="cryptoList"></div>
-        </div>
+        <details class="crypto-all" id="cryptoBlock" hidden>
+          <summary class="row">
+            <div class="tile" id="cryptoTile"></div>
+            <div><b>Crypto</b><small id="cryptoSyms"></small></div>
+            <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </summary>
+          <div class="crypto-body">
+            <p class="crypto-intro">Send only on the network shown next to each coin. Coins sent on another network are lost.</p>
+            <div id="cryptoList"></div>
+          </div>
+        </details>
       </div>
     </div>
   </section>
@@ -514,6 +526,8 @@ if (!coins.length && SITE.crypto.length) payList.insertAdjacentHTML("beforeend",
 if (coins.length) {
   const css = getComputedStyle(document.documentElement);
   document.getElementById("cryptoBlock").hidden = false;
+  document.getElementById("cryptoTile").innerHTML = ICON.coins;
+  document.getElementById("cryptoSyms").textContent = coins.map(c => c.sym).join(", ");
   document.getElementById("cryptoList").innerHTML = coins.map(c => `
     <details class="crypto">
       <summary class="row">
