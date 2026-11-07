@@ -49,12 +49,14 @@
   --shadow-art: 0 24px 48px rgb(4 8 14 / 0.45);
   --bloom-a: 19%; --bloom-b: 11%;
   --tile: 64px;
+  --star-alpha: 1;
 }
 @media (prefers-color-scheme: light) {
   :root {
     --color-scrim: rgb(35 28 23 / 0.6);
     --shadow-art: 0 24px 48px rgb(80 50 30 / 0.18);
     --bloom-a: 22%; --bloom-b: 10%;
+    --star-alpha: 0.35;
   }
 }
 
@@ -110,6 +112,9 @@ svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-widt
 .hero .btns { margin-top: var(--space-xl); }
 .hero-art { margin: 0; justify-self: center; width: min(100%, 660px); }
 .hero-art img { width: 100%; filter: drop-shadow(var(--shadow-art)); }
+/* Stars: a canvas behind the hero, drawn by the script at the end of the page. */
+.hero { position: relative; isolation: isolate; }
+.hero .stars { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
 
 /* Signature: the readout, an amber tube display on a dark device face in both themes. */
 .readout { display: inline-flex; gap: var(--space-lg); margin-top: var(--space-2xl); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-inner);
@@ -265,6 +270,7 @@ dialog header span { font-size: var(--text-sm); font-weight: 600; }
 
 <main id="main">
   <section class="hero">
+    <canvas class="stars" aria-hidden="true"></canvas>
     <div class="container">
       <div>
         <h1>Utilities that make everyday things simpler.</h1>
@@ -602,6 +608,81 @@ viewer.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") show(at - 1);
   if (e.key === "ArrowRight") show(at + 1);
 });
+
+// Stars behind the hero: they twinkle, now and then one goes out and lights up elsewhere, and every few seconds one falls.
+// Still under reduced motion; the loop stops while the hero is off screen.
+(() => {
+  const cv = document.querySelector(".hero .stars"), cx = cv.getContext("2d");
+  const still = matchMedia("(prefers-reduced-motion: reduce)");
+  const root = getComputedStyle(document.documentElement);
+  const text = document.querySelector(".hero .container > div");
+  let w = 0, h = 0, keep = null, stars = [], shot = null, nextShot = 0, raf = 0, seen = false;
+  // A new star lands anywhere except on the headline, the line under it, the button and the readout.
+  const spot = () => {
+    for (let i = 0; i < 12; i++) {
+      const x = Math.random() * w, y = Math.random() * h;
+      if (!keep || x < keep.l || x > keep.r || y < keep.t || y > keep.b) return { x, y };
+    }
+    return { x: Math.random() * w, y: Math.random() * h };
+  };
+  const star = (t, old) => {
+    const life = 8000 + Math.random() * 22000;
+    return { ...spot(), r: Math.random() ** 3 * 1.6 + 0.7, a: Math.random() * 0.45 + 0.55,
+      sp: Math.random() * 1.5 + 0.4, ph: Math.random() * 6.3, life, born: t - (old ? Math.random() * life : 0) };
+  };
+  function size() {
+    const d = Math.min(devicePixelRatio || 1, 2);
+    w = cv.clientWidth; h = cv.clientHeight;
+    const c = cv.getBoundingClientRect(), b = text.getBoundingClientRect();
+    keep = { l: b.left - c.left - 16, r: b.right - c.left + 16, t: b.top - c.top - 16, b: b.bottom - c.top + 16 };
+    cv.width = w * d; cv.height = h * d; cx.setTransform(d, 0, 0, d, 0, 0);
+    const t = performance.now();
+    stars = Array.from({ length: Math.min(150, Math.round(w * h / 9000)) }, () => star(t, true));
+  }
+  function draw(t) {
+    const moving = !still.matches, ink = root.getPropertyValue("--color-ink").trim(), k = +root.getPropertyValue("--star-alpha") || 1;
+    cx.clearRect(0, 0, w, h);
+    cx.fillStyle = ink;
+    stars.forEach((s, i) => {
+      if (moving && t - s.born > s.life) s = stars[i] = star(t, false);
+      const age = t - s.born;
+      const fade = moving ? Math.max(0, Math.min(1, age / 1500, (s.life - age) / 1500)) : 1;
+      const tw = moving ? 0.6 + 0.4 * Math.sin(t / 1000 * s.sp + s.ph) : 1;
+      cx.globalAlpha = s.a * tw * fade * k;
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.283); cx.fill();
+      // The biggest stars get a soft halo.
+      if (s.r > 1.6) { cx.globalAlpha *= 0.15; cx.beginPath(); cx.arc(s.x, s.y, s.r * 3, 0, 6.283); cx.fill(); }
+    });
+    if (!moving) return;
+    if (!shot && t > nextShot) {
+      const ang = (Math.random() < 0.5 ? 0.35 : Math.PI - 0.35) + (Math.random() - 0.5) * 0.3;
+      shot = { x: w * (0.15 + Math.random() * 0.7), y: h * Math.random() * 0.4, dx: Math.cos(ang), dy: Math.sin(ang),
+        dist: 260 + Math.random() * 200, len: 90 + Math.random() * 80, t0: t, dur: 900 + Math.random() * 400 };
+    }
+    if (shot) {
+      const p = (t - shot.t0) / shot.dur;
+      if (p >= 1) { shot = null; nextShot = t + 5000 + Math.random() * 9000; return; }
+      const hx = shot.x + shot.dx * shot.dist * p, hy = shot.y + shot.dy * shot.dist * p;
+      const tx = hx - shot.dx * shot.len * Math.min(1, p * 3), ty = hy - shot.dy * shot.len * Math.min(1, p * 3);
+      const g = cx.createLinearGradient(tx, ty, hx, hy);
+      g.addColorStop(0, "transparent"); g.addColorStop(1, ink);
+      cx.globalAlpha = Math.sin(Math.PI * p) * k;
+      cx.strokeStyle = g; cx.lineWidth = 1.4; cx.lineCap = "round";
+      cx.beginPath(); cx.moveTo(tx, ty); cx.lineTo(hx, hy); cx.stroke();
+    }
+  }
+  let last = 0;
+  const frame = t => { if (t - last > 15) { last = t; draw(t); } raf = requestAnimationFrame(frame); };
+  function play() {
+    cancelAnimationFrame(raf);
+    if (still.matches) draw(performance.now());
+    else if (seen) raf = requestAnimationFrame(frame);
+  }
+  new ResizeObserver(() => { size(); play(); }).observe(cv);
+  new IntersectionObserver(([e]) => { seen = e.isIntersecting; play(); }).observe(cv);
+  still.addEventListener("change", play);
+  nextShot = performance.now() + 2500;
+})();
 </script>
 </body>
 </html>
