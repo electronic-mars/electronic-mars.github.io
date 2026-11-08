@@ -16,7 +16,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- Visit counter for the owner only: GoatCounter, no cookies, no personal data. -->
 <script data-goatcounter="https://electronic-mars.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<script>document.documentElement.classList.add("js");</script>
+<script>document.documentElement.classList.add("js"); try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}</script>
 <!--
   The site is this file, tokens.css, base.css and img/. Everything that changes
   (a Store link, a new program, a wallet address) is edited in SITE below, not in
@@ -36,7 +36,7 @@
 /* Hallmark · dismissed 77 · the owner asked for the programs as one plain list again; four sections carry the whole site */
 /* Hallmark · answered F20 · the program buttons wrap by label length; Share closes the row on purpose */
 /* Hallmark · reworded "Support" heading to "Ways to say thanks" · section heads say what the visitor gets */
-@import url("./tokens.css");
+@import url("./tokens.css?v=2");
 @import url("./base.css");
 @font-face { font-family: "DSEG7"; src: url("https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2") format("woff2"); font-display: swap; }
 
@@ -55,12 +55,18 @@
   --star-alpha: 1;
 }
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --color-scrim: rgb(35 28 23 / 0.6);
     --shadow-art: 0 24px 48px rgb(80 50 30 / 0.18);
     --bloom-a: 22%; --bloom-b: 10%;
     --star-alpha: 0.35;
   }
+}
+:root[data-theme="light"] {
+  --color-scrim: rgb(35 28 23 / 0.6);
+  --shadow-art: 0 24px 48px rgb(80 50 30 / 0.18);
+  --bloom-a: 22%; --bloom-b: 10%;
+  --star-alpha: 0.35;
 }
 
 html { scroll-behavior: smooth; }
@@ -91,6 +97,14 @@ svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-widt
   transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
 .nav-bar nav a:hover { color: var(--color-ink); background: var(--color-paper-2); }
 .nav-bar nav a:active { transform: translateY(1px); }
+.nav-bar nav { margin-left: auto; }
+/* Light and dark: the system's choice until the visitor picks one, which the browser then remembers. */
+.theme { display: flex; gap: var(--space-3xs); padding: var(--space-3xs); border: 1px solid var(--color-rule); border-radius: var(--radius-btn); }
+.theme button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: calc(var(--radius-btn) - 2px); cursor: pointer;
+  background: transparent; color: var(--color-muted); transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.theme button:hover { color: var(--color-ink); }
+.theme button:active { transform: translateY(1px); }
+.theme button[aria-pressed="true"] { background: var(--color-paper-3); color: var(--color-ink); }
 
 /* Buttons, all states. */
 .btn { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 44px; padding: 0 var(--space-md); border: 1px solid var(--color-rule); border-radius: var(--radius-btn);
@@ -200,7 +214,8 @@ section > .container > h2 { margin-bottom: var(--space-2xl); }
 .goal { margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-rule); }
 .goal h3 { font-size: var(--text-lg); color: var(--color-glow); }
 .goal p { color: var(--color-ink-2); margin-top: var(--space-xs); }
-@media (prefers-color-scheme: light) { .goal h3 { color: var(--color-accent); } }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .goal h3 { color: var(--color-accent); } }
+:root[data-theme="light"] .goal h3 { color: var(--color-accent); }
 .ways { border-top: 1px solid var(--color-rule); }
 .row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: var(--space-md); align-items: center; padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
 .row .tile { width: 52px; height: 52px; border-radius: var(--radius-inner); }
@@ -302,6 +317,10 @@ dialog header span { font-size: var(--text-sm); font-weight: 600; }
       <a href="#support">Support</a>
       <a href="https://github.com/electronic-mars">GitHub</a>
     </nav>
+    <div class="theme" role="group" aria-label="Theme">
+      <button type="button" data-theme-set="light" aria-pressed="false" aria-label="Light"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg></button>
+      <button type="button" data-theme-set="dark" aria-pressed="false" aria-label="Dark"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+    </div>
   </div>
 </header>
 
@@ -459,7 +478,6 @@ const SITE = {
         ["img/oy/demo-edit", 1600, 1080, 15, "Cutting", "Ctrl+E opens the editor: I cuts the start, O cuts the end. Then a circle, an arrow and a line of text over the frame, and save."],
         ["img/oy/demo-shot", 1600, 1056, 15.6, "Screenshots", "Take a still, ring it, point at it, write on it, save. Then the next file: a frame and a caption on a second shot."],
         ["img/oy/demo-draw", 1600, 900, 29.2, "Drawing", "Press Ctrl+E, then frame, point and write over the video. Each drawing has its own time, and saving puts them into the clip."],
-        ["img/oy/demo-story", 1280, 720, 22.83, "The launch story", "Settlers land on an empty planet, build a colony, and two of them set off for Saturn's rings."],
       ],
       credit: 'Playing and Screenshots show <a href="https://mango.blender.org/">Tears of Steel</a> and <a href="https://peach.blender.org/">Big Buck Bunny</a>, © Blender Foundation, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.',
       shots: [
@@ -653,6 +671,19 @@ document.addEventListener("click", e => {
     setTimeout(() => toast.classList.remove("show"), 1400);
   });
 });
+
+// Light and dark: the pressed button shows the theme in use, the visitor's pick or else the system's.
+{
+  const sys = matchMedia("(prefers-color-scheme: light)"), btns = document.querySelectorAll("[data-theme-set]");
+  const mark = () => { const t = document.documentElement.dataset.theme || (sys.matches ? "light" : "dark"); btns.forEach(b => b.setAttribute("aria-pressed", b.dataset.themeSet === t)); };
+  btns.forEach(b => b.addEventListener("click", () => {
+    document.documentElement.dataset.theme = b.dataset.themeSet;
+    try { localStorage.setItem("theme", b.dataset.themeSet); } catch {}
+    mark();
+  }));
+  sys.addEventListener("change", mark);
+  mark();
+}
 
 // The monitors: a clip plays only while its monitor is on screen, and runs into the next one, the last back to the first.
 // Under reduced motion nothing starts by itself; a still stays until the visitor presses play or picks a clip.
