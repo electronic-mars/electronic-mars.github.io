@@ -181,6 +181,8 @@ section > .container > h2 { margin-bottom: var(--space-2xl); }
   transition: color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
 .chan:hover { color: var(--color-device-ink); border-color: var(--color-glow-ghost); }
 .chan[aria-pressed="true"] { color: var(--color-device-ink); border-color: var(--color-glow-ghost); background: rgb(255 181 71 / 0.06); }
+.credit { grid-column: 1 / -1; margin: 0; font-size: var(--text-sm); color: var(--color-device-muted); }
+.credit a { color: var(--color-device-ink); text-underline-offset: 0.2em; }
 .chan b { font-weight: 600; }
 .chan small { grid-column: 1 / -1; font-size: var(--text-sm); color: var(--color-device-muted); }
 .chan .seg { font-size: 15px; }
@@ -453,9 +455,13 @@ const SITE = {
       download: "https://github.com/electronic-mars/OY/releases/latest",
       source: "https://github.com/electronic-mars/OY",
       demos: [
+        ["img/oy/demo-plays", 1600, 900, 15, "Playing", "Drop a file in and it plays. Hover the seek bar to see the frame, right-click the speed for 2×, set a pause in 30 minutes, pick Japanese subtitles."],
+        ["img/oy/demo-edit", 1600, 1080, 15, "Cutting", "Ctrl+E opens the editor: I cuts the start, O cuts the end. Then a circle, an arrow and a line of text over the frame, and save."],
+        ["img/oy/demo-shot", 1600, 1056, 15.6, "Screenshots", "Take a still, ring it, point at it, write on it, save. Then the next file: a frame and a caption on a second shot."],
         ["img/oy/demo-draw", 1600, 900, 29.2, "Drawing", "Press Ctrl+E, then frame, point and write over the video. Each drawing has its own time, and saving puts them into the clip."],
         ["img/oy/demo-story", 1280, 720, 22.83, "The launch story", "Settlers land on an empty planet, build a colony, and two of them set off for Saturn's rings."],
       ],
+      credit: 'Playing and Screenshots show <a href="https://mango.blender.org/">Tears of Steel</a> and <a href="https://peach.blender.org/">Big Buck Bunny</a>, © Blender Foundation, under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.',
       shots: [
         ["img/oy/watch.webp", "A free video player for Windows that also cuts and annotates"],
         ["img/oy/episodes.webp", "Open one episode, the next ones line up"],
@@ -557,7 +563,8 @@ const clock = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(
 const monitor = (p, i) => p.demos ? `
       <div class="monitor${p.demos.every(d => d[1] > d[2]) ? " wide" : ""}" role="group" aria-label="${esc(p.name)} at work" data-demo="${i}">
         <div class="screen"><video muted playsinline preload="none"></video><button class="hold" type="button"></button></div>
-        <div class="chans">${p.demos.map(d => `<button class="chan" type="button" aria-pressed="false"><b>${esc(d[4])}</b><span class="seg" data-ghost="8:88"><span>${clock(d[3])}</span></span><small>${esc(d[5])}</small></button>`).join("")}</div>
+        <div class="chans">${p.demos.map(d => `<button class="chan" type="button" aria-pressed="false"><b>${esc(d[4])}</b><span class="seg" data-ghost="8:88"><span>${clock(d[3])}</span></span><small>${esc(d[5])}</small></button>`).join("")}</div>${p.credit ? `
+        <p class="credit">${p.credit}</p>` : ""}
       </div>` : "";
 SITE.programs.forEach((p, i) => {
   const ready = Boolean(p.download);
